@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkSwift - Premium URL Shortener</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            padding-right: 120px;
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .url-input:focus {
+            border-color: var(--accent-primary);
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .url-input::placeholder {
+            color: #64748b;
+        }
+
+        .shorten-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .shorten-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .shorten-btn:active {
+            transform: translateY(0);
+        }
+
+        .shorten-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Result Area */
+        .result-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        .result-label {
+            color: var(--success-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-url-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .short-url {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+            word-break: break-all;
+            text-decoration: none;
+        }
+
+        .short-url:hover {
+            text-decoration: underline;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-link {
+            display: inline-block;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .stats-link:hover {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+
+        /* Error state */
+        .error-message {
+            color: var(--error-color);
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Background animated blobs */
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.4;
+            animation: float 10s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent-primary);
+            top: -10%;
+            left: -10%;
+            border-radius: 50%;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-secondary);
+            bottom: -20%;
+            right: -10%;
+            border-radius: 50%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">LinkSwift</h1>
+            <p class="subtitle">Shorten your links. Expand your reach.</p>
+        </div>
+
+        <div class="glass-card">
+            <form id="shortenForm">
+                <div class="input-group">
+                    <input type="url" id="urlInput" class="url-input" placeholder="Paste your long URL here..." required autocomplete="off">
+                    <button type="submit" id="submitBtn" class="shorten-btn">
+                        <span id="btnText">Shorten</span>
+                        <div id="btnSpinner" class="spinner"></div>
+                    </button>
+                </div>
+            </form>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <div id="resultContainer" class="result-container">
+                <div class="result-label">Your shortened URL is ready!</div>
+                <div class="result-url-wrapper">
+                    <a href="#" target="_blank" id="shortUrlDisplay" class="short-url"></a>
+                    <button id="copyBtn" class="copy-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        Copy
+                    </button>
+                </div>
+                <a href="#" id="statsLink" class="stats-link">View link statistics &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('shortenForm');
+            const urlInput = document.getElementById('urlInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const resultContainer = document.getElementById('resultContainer');
+            const shortUrlDisplay = document.getElementById('shortUrlDisplay');
+            const copyBtn = document.getElementById('copyBtn');
+            const statsLink = document.getElementById('statsLink');
+            const errorMessage = document.getElementById('errorMessage');
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const url = urlInput.value.trim();
+                if (!url) return;
+
+                // Reset state
+                errorMessage.classList.remove('show');
+                resultContainer.classList.remove('show');
+                setLoading(true);
+
+                try {
+                    const response = await fetch('/api/shorten', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ originalUrl: url })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.detail || data.errors?.originalUrl || 'Failed to shorten URL');
+                    }
+
+                    // Success
+                    shortUrlDisplay.textContent = data.shortUrl;
+                    shortUrlDisplay.href = data.shortUrl;
+                    
+                    // Setup stats link (basic example, typically you'd have a UI for this)
+                    statsLink.onclick = (e) => {
+                        e.preventDefault();
+                        fetchStats(data.shortCode);
+                    };
+
+                    resultContainer.classList.add('show');
+                    urlInput.value = ''; // Clear input
+
+                } catch (error) {
+                    errorMessage.textContent = error.message;
+                    errorMessage.classList.add('show');
+                } finally {
+                    setLoading(false);
+                }
+            });
+
+            copyBtn.addEventListener('click', async () => {
+                const url = shortUrlDisplay.textContent;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+                    copyBtn.style.color = '#10b981';
+                    copyBtn.style.borderColor = '#10b981';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.color = '';
+                        copyBtn.style.borderColor = '';
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                }
+            });
+
+            async function fetchStats(shortCode) {
+                try {
+                    const response = await fetch(`/api/stats/${shortCode}`);
+                    const data = await response.json();
+                    if(response.ok) {
+                        alert(`Stats for ${data.shortCode}:\nOriginal URL: ${data.originalUrl}\nClicks: ${data.clickCount}\nCreated: ${new Date(data.createdAt).toLocaleString()}`);
+                    }
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+
+            function setLoading(isLoading) {
+                submitBtn.disabled = isLoading;
+                if (isLoading) {
+                    btnText.style.display = 'none';
+                    btnSpinner.style.display = 'block';
+                } else {
+                    btnText.style.display = 'block';
+                    btnSpinner.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
