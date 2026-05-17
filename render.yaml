@@ -9,13 +9,11 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: docker
       - key: DB_HOST
-        fromService:
-          type: pserv
+        fromDatabase:
           name: url-shortener-db
           property: host
       - key: DB_PORT
-        fromService:
-          type: pserv
+        fromDatabase:
           name: url-shortener-db
           property: port
       - key: DB_NAME
@@ -31,15 +29,9 @@ services:
           name: url-shortener-db
           property: password
       - key: REDIS_HOST
-        fromService:
-          type: redis
-          name: url-shortener-cache
-          property: host
+        sync: false
       - key: REDIS_PORT
-        fromService:
-          type: redis
-          name: url-shortener-cache
-          property: port
+        value: "6379"
 
 databases:
   # PostgreSQL Database
@@ -48,9 +40,3 @@ databases:
     user: urlshortener_user
     plan: free
     region: ohio
-
-  # Redis Cache
-  # Note: Render does not have a "free" tier for managed Redis via Blueprints. 
-  # However, it offers a free Redis instance if created manually through the dashboard.
-  # Alternatively, we can define a background worker running Redis, but Render has native Redis.
-  # If the user is on the free tier, they might need to use the starter tier or create it manually.
