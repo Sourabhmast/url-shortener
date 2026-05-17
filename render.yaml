@@ -1,0 +1,56 @@
+services:
+  # The Spring Boot Application
+  - type: web
+    name: url-shortener-app
+    env: docker
+    plan: free # Use 'starter' if you want a paid plan
+    region: ohio
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: docker
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: url-shortener-db
+          property: host
+      - key: DB_PORT
+        fromService:
+          type: pserv
+          name: url-shortener-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: url-shortener-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: url-shortener-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: url-shortener-db
+          property: password
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: url-shortener-cache
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: url-shortener-cache
+          property: port
+
+databases:
+  # PostgreSQL Database
+  - name: url-shortener-db
+    databaseName: urlshortener
+    user: urlshortener_user
+    plan: free
+    region: ohio
+
+  # Redis Cache
+  # Note: Render does not have a "free" tier for managed Redis via Blueprints. 
+  # However, it offers a free Redis instance if created manually through the dashboard.
+  # Alternatively, we can define a background worker running Redis, but Render has native Redis.
+  # If the user is on the free tier, they might need to use the starter tier or create it manually.
